@@ -1,6 +1,6 @@
 def check(student_name, word):
-    student_name = student_name.lower().replace('ё', 'е').replace(' ', '')
-    word = word.lower().replace('ё', 'е')
+    student_name = student_name.lower().replace('ё', 'е').replace(' ', '').replace('-', '')
+    word = word.lower().replace('ё', 'е').replace(' ', '')
 
     def full_check(student_name, word):
         if student_name == word:

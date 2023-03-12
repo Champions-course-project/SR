@@ -152,7 +152,6 @@ def get_date():
 
 def get_student_name():
     words_list = speech()
-
     if words_list:
 
         with open('students_status.json', 'r', encoding='UTF-8') as file:
@@ -297,4 +296,5 @@ def main():
     return False
 
 
-print(main())
+# print(main())
+get_student_name()
