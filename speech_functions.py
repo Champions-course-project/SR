@@ -1,16 +1,13 @@
 from check_name import check
 from tabulate import tabulate
-import os
 import time
 import json
 import full_record
-import convert_number
 
 
 def speech():
     try:
-        r = full_record.STT()
-        result = r.decode()
+        result = full_record.STT.decode()
         if result:
             words_list = []
             for transcript in result['alternative']:
@@ -23,92 +20,51 @@ def speech():
         return False
 
 
-def get_faculty():
-    with open(os.path.join("pnu_info", "Факультеты и институты.json"), 'r', encoding='UTF-8') as file:
+def get_groups_info():
+    with open('pnu_info\\Факультеты и институты.json', 'r', encoding='UTF-8') as file:
         faculties_dict = json.load(file)
 
-    # Отображение факультетов и институтов
     faculties_list = list(faculties_dict.keys())
     for faculty in list(faculties_dict.keys()):
         print(f"{faculties_list.index(faculty) + 1}. {faculty}")
+    try:
+        number = int(input("Введите номер факультета: "))
+        while number > len(faculties_list) or number < 1:
+            number = int(input("Введите номер факультета: "))
+    except ValueError:
+        number = int(input("Введите <корректный> номер факультета: "))
+        while number > len(faculties_list) or number < 1:
+            number = int(input("Введите номер факультета: "))
+    print(faculties_list[number - 1])
 
     try:
-        print("Выберите номер факультета: ")
-        words_list = speech()
-        if words_list:
-            number = words_list[0]
-            if not words_list[0].isdigit():
-                number = convert_number.convert_string(number)
-            while number > len(faculties_list) or number < 1 or not number:
-                print("Выберите номер факультета: ")
-                words_list = speech()
-                if words_list:
-                    number = words_list[0]
-                    if not words_list[0].isdigit():
-                        number = convert_number.convert_string(number)
-            print(faculties_list[number - 1])
-            return faculties_list[number - 1]
-    except Exception as exc:
-        print(type(exc).__name__)
-        return False
+        course = input("Введите номер курса: ")
+        while int(course) > 6 or number < 1:
+            course = input("Введите номер курса: ")
+    except ValueError:
+        course = input("Введите <корректный> номер курса: ")
+        while int(course) > 6 or number < 1:
+            course = input("Введите <корректный> номер курса: ")
+    with open('pnu_info\\groups_info.json', 'r', encoding='UTF-8') as file:
+        group_dict = json.load(file)
 
-
-def get_course(faculty):
-    with open(os.path.join("pnu_info", "groups_info.json"), 'r', encoding='UTF-8') as file:
-        groups_dict = json.load(file)
-    print("Имеющиеся курсы: ")
-    courses_list = []
-    for course_number in groups_dict[faculty].keys():
-        print(course_number)
-        courses_list.append(course_number)
-
-    try:
-        print("Выберите курс (только порядковый числитель, например: 'первый')... ")
-        words_list = speech()
-        if words_list:
-            course = words_list[0]
-            if not words_list[0].isdigit():
-                course = convert_number.convert_course(course)
-            while (str(course) + " курс" not in courses_list) or not course:
-                print("Выберите курс (только порядковый числитель, например: 'первый')... ")
-                words_list = speech()
-                if words_list:
-                    course = words_list[0]
-                    if not words_list[0].isdigit():
-                        course = convert_number.convert_course(course)
-            return course
-    except Exception as exc:
-        print(type(exc).__name__)
-        return False
-
-
-def get_group(faculty, course):
-    with open(os.path.join("pnu_info", "groups_info.json"), 'r', encoding='UTF-8') as file:
-        groups_dict = json.load(file)
-    groups_list = groups_dict[faculty].get(str(course) + ' курс')
+    groups_list = group_dict[faculties_list[number - 1]].get(course)
     if groups_list:
         for group in groups_list:
             print(f"{groups_list.index(group) + 1}. {group}")
-        print("Выберите номер группы: ")
         try:
-            words_list = speech()
-            if words_list:
-                group = words_list[0]
-                if not words_list[0].isdigit():
-                    group = convert_number.convert_string(group)
-                while group > len(groups_list) or group < 1 or not group:
-                    print("Выберите номер группы: ")
-                    words_list = speech()
-                    if words_list:
-                        group = words_list[0]
-                        if not words_list[0].isdigit():
-                            group = convert_number.convert_string(group)
-                return groups_list[group - 1]
-        except Exception as exc:
-            print(type(exc).__name__)
-            return False
+            group = int(input("Введите номер группы: "))
+            while group > len(groups_list) or group < 1:
+                group = int(input("Введите номер группы: "))
+        except ValueError:
+            group = int(input("Введите <корректный> номер группы: "))
+            while group > len(groups_list) or group < 1:
+                group = int(input("Введите <корректный> номер группы: "))
+        print(groups_list[group - 1])
     else:
         return False
+
+    return True
 
 
 def get_date():
@@ -179,7 +135,8 @@ def get_date():
                     for element in string:
                         date += element.lower().replace('ё', 'е') + " "
                     if date[:-1] in days_list:
-                        date = date.replace(date[:-1], str(days_list.index(date[:-1]) + 1))
+                        date = date.replace(
+                            date[:-1], str(days_list.index(date[:-1]) + 1))
                         date = date[:-1] + "." + month + "."
                         # !!! Внимание на "2023" - это затычка
                         if date + "2023" in dates_list:
@@ -216,7 +173,8 @@ def get_student_name():
                         possible_names_list.append(student_name)
         if possible_names_list:
             if len(possible_names_list) == 1:
-                print(f"Возможно вы имели в виду фамилию {possible_names_list[0]}?(Да/Нет)")
+                print(
+                    f"Возможно вы имели в виду фамилию {possible_names_list[0]}?(Да/Нет)")
                 print("Ваш ответ: ")
                 choice = input().lower()
                 while choice != "да" and choice != "нет":
@@ -230,7 +188,8 @@ def get_student_name():
             else:
                 print("Выберите один из возможных вариантов фамилий(номер):")
                 for name_index in range(len(possible_names_list)):
-                    print(f"{name_index + 1}. {possible_names_list[name_index]}")
+                    print(
+                        f"{name_index + 1}. {possible_names_list[name_index]}")
                 try:
                     choice = int(input("Ваш выбор: "))
                     while choice <= 0 or choice > len(possible_names_list):
@@ -240,7 +199,8 @@ def get_student_name():
                     choice = int(input("Введите корректный номер: "))
                     while choice <= 0 or choice > len(possible_names_list):
                         choice = int(input("Введите корректный номер: "))
-                print(f"Ваш выбор по номеру {choice} - {possible_names_list[choice - 1]}")
+                print(
+                    f"Ваш выбор по номеру {choice} - {possible_names_list[choice - 1]}")
                 return possible_names_list[choice - 1]
         print("Распознавание не прошло! Попробуйте еще раз!")
         return False
@@ -284,7 +244,8 @@ def update_status(date, student_name, status):
     students_dict[student_name][date] = status
     with open('students_status.json', 'w', encoding='UTF-8') as file:
         json.dump(students_dict, file, indent=4, ensure_ascii=False)
-    print(f"Статус на <{date}> студента <{student_name}> успешно изменен на <{status}>!")
+    print(
+        f"Статус на <{date}> студента <{student_name}> успешно изменен на <{status}>!")
     return True
 
 
@@ -310,7 +271,8 @@ def show_list():
 
     numbers_list = [number for number in range(1, len(table_data))]
 
-    display_table = tabulate(table_data, headers='firstrow', tablefmt='grid', showindex=numbers_list)
+    display_table = tabulate(
+        table_data, headers='firstrow', tablefmt='grid', showindex=numbers_list)
     print(display_table)
     return True
 
@@ -318,11 +280,6 @@ def show_list():
 def main():
     print("Вас приветствует голосовой ассистент!")
     time.sleep(2)
-    faculty_input = get_faculty()
-    if faculty_input:
-        course_input = get_course(faculty_input)
-        if course_input:
-            print(get_group(faculty_input, course_input))
     show_list()
     print("Назовите <дату>...")
     date = get_date()
@@ -341,4 +298,3 @@ def main():
 
 
 print(main())
-# get_student_name()
