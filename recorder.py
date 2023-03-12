@@ -19,7 +19,8 @@ class Recorder:
         """
         Record a raw data and return it.
         """
-        NewStream = Recorder.__p.open(rate=Recorder.freq, channels=Recorder.__channels, format=Recorder.__FMT, input=True,
+        NewStream = Recorder.__p.open(rate=Recorder.freq, channels=Recorder.__channels, format=Recorder.__FMT,
+                                      input=True,
                                       frames_per_buffer=Recorder.__chunk, start=False)
         # record a batch of frames, each 1024 bytes
         frames = []
